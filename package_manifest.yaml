@@ -1,0 +1,65 @@
+# Piper arm URDF + robot_state_publisher wrapper.
+#
+# Stand-in for `system.soma` (URDF + robot_state_publisher), which is
+# on the v0.2 robonix roadmap but not yet shipped. Until soma lands,
+# this package owns the static + joint-driven TF tree for the Piper
+# arm:
+#
+#   base_link → link1 → link2 → link3 → link4 → link5 → link6
+#
+# (driven from `/arm/joint_states_single` via robot_state_publisher).
+#
+# The static hand-eye edge `link6 → camera_color_optical_frame` is
+# the SIBLING package easy_handeye2_rbnx's job — these two are
+# intentionally split (different lifecycles: URDF tracks code,
+# calibration tracks physical re-mounts).
+#
+# Runtime shape (intentionally minimal — same pattern as
+# ranger_description_rbnx):
+#   - scripts/build.sh runs `rbnx codegen` ONLY (so the start script
+#     can talk to atlas via the generated atlas_pb2 stubs).
+#   - scripts/start.sh execs scripts/atlas_register_and_launch.py,
+#     which:
+#       1. RegisterPrimitive(id=piper_description, namespace=
+#          robonix/primitive/tf) on atlas — unblocks rbnx boot's
+#          wait_for_registration loop.
+#       2. spawns `ros2 launch <pkg>/launch/piper_urdf.launch.xml`
+#          as a child process group (robot_state_publisher loads
+#          the vendored URDF + remap joint_states subscription).
+#       3. heartbeats every 30s.
+#       4. forwards SIGTERM/SIGINT to the launch tree on shutdown.
+#
+# No Driver(CMD_INIT) handler, no `*/driver` capability, no
+# atlas-routed topics. TF in ROS 2 is a global side-channel —
+# every tf2-aware node joins /tf + /tf_static automatically — so
+# atlas-routing it would only add indirection. With capabilities: []
+# rbnx boot's spawn_and_init walks `wait_for_registration` → finds
+# `driver_contract=None` → marks the package ACTIVE without trying
+# to drive INIT/ACTIVATE.
+#
+# Boot ordering: MUST be after piper_ctl (which publishes
+# `/arm/joint_states_single`). robot_state_publisher will silently
+# stay quiet on /tf until it gets at least one JointState — RViz
+# users will see the robot at zero pose until the arm streams its
+# first joint feedback. That's a feature, not a bug: it confirms
+# the joint feedback is live.
+#
+# Frame names match the upstream piper_description URDF (joint1..joint6,
+# link1..link6, base_link). NOT prefixed with `arm/`. Future moving-
+# platform deploys (piper-on-Ranger) will need to fork the URDF to
+# add a tf_prefix to avoid collision with chassis `base_link`.
+manifestVersion: 1
+
+package:
+  name: com.robonix.piper_grasp.piper_description
+  version: 0.1.0
+  vendor: robonix
+  description: Piper arm URDF + robot_state_publisher wrapper (TF stand-in until soma ships).
+  license: MulanPSL-2.0
+
+build: bash scripts/build.sh
+start: bash scripts/start.sh
+
+# Empty on purpose — see file header. We register a provider on
+# atlas (so rbnx boot proceeds) but declare no routed contracts.
+capabilities: []
