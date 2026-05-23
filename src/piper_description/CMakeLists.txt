@@ -20,8 +20,17 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+# Vendored subset of upstream piper_description. We only carry the
+# directories actually needed for the rbnx grasp deploy:
+#   * urdf/    — URDF + xacro, loaded by robot_state_publisher
+#   * meshes/  — STL files referenced by `package://piper_description/meshes/...`
+# The upstream package also ships launch/, rviz/, mujoco_model/, but
+# rbnx owns its own launch (piper_description_rbnx/launch/ at the
+# package root, used by scripts/start.sh), runs headless (no rviz),
+# and doesn't simulate (no mujoco). Listing those here would make
+# ament_cmake_symlink_install error out with "can't find DIRECTORY".
 install(
-  DIRECTORY launch  meshes rviz urdf mujoco_model
+  DIRECTORY meshes urdf
   DESTINATION share/${PROJECT_NAME}
 )
 if(BUILD_TESTING)
