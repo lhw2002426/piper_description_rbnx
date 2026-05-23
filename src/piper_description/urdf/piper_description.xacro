@@ -527,6 +527,17 @@
   <xacro:transmission_block tran_name="tran7" joint_name="joint7" motor_name="motor7"/>
   <xacro:transmission_block tran_name="tran8" joint_name="joint8" motor_name="motor8"/>
 <!-- gazebo -->
+<!--
+  rbnx grasp deploy: this <gazebo>...</gazebo> block was the upstream
+  hook for gazebo_ros2_control. We don't run gazebo here (headless
+  real-arm deploy: piper_ctl_rbnx drives the hardware, MoveIt + the
+  vendored cpp moveit_control_node_yolo plans + executes), and the
+  $(find piper_gazebo) substitution would otherwise fail at xacro
+  time with PackageNotFoundError, breaking ros2 launch of the
+  piper_with_gripper_moveit launch tree before move_group can come
+  up. To re-enable gazebo simulation, restore this block AND vendor
+  the piper_gazebo package alongside piper_description in this rbnx
+  workspace.
   <gazebo>
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
         <robotNamespace>/piper</robotNamespace>
@@ -534,6 +545,7 @@
         <legacyModeNS>true</legacyModeNS>
     </plugin>
   </gazebo>
+-->
  
   <!-- <gazebo reference="base_link">
     <material>Gazebo/Black</material>
