@@ -9,10 +9,9 @@
 #
 # (driven from `/arm/joint_states_single` via robot_state_publisher).
 #
-# The static hand-eye edge `link6 → camera_color_optical_frame` is
-# the SIBLING package easy_handeye2_rbnx's job — these two are
-# intentionally split (different lifecycles: URDF tracks code,
-# calibration tracks physical re-mounts).
+# Current piper_grasp deploy does not run easy_handeye2. Hand-eye for
+# vertical grasp is represented by the 2D homography file consumed by
+# yolo_grasp; this package only owns the Piper arm model and TF chain.
 #
 # Runtime shape (intentionally minimal — same pattern as
 # ranger_description_rbnx):

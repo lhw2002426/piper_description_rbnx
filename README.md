@@ -11,11 +11,11 @@ base_link → link1 → link2 → link3 → link4 → link5 → link6
 
 driven from `/arm/joint_states_single` via `robot_state_publisher`.
 
-The static **hand-eye** edge `link6 → camera_color_optical_frame`
-lives in the **sibling package** `easy_handeye2_rbnx` (different
-lifecycle: URDF tracks code, calibration tracks physical re-mounts —
-re-calibrating after a camera re-mount touches only that package's
-calib YAML, never this one).
+This package does not publish camera hand-eye calibration. In the
+current vertical-grasp deploy, yolo_grasp consumes
+`rbnx-boot/hand-eye-data/2d_homography.npy` to map RGB bbox pixels
+directly into `arm/base_link` XY, then combines that with the configured
+desktop height.
 
 ## Boot ordering
 
@@ -25,8 +25,9 @@ on /tf and the arm appears "frozen at zero" in RViz. The deploy
 manifest enforces this by listing `piper_ctl` before
 `piper_description` under `primitive:`.
 
-Independent of `easy_handeye2` and `orbbec_camera` — those publish
-disjoint TF subtrees. Either order works for boot.
+Independent of `orbbec_camera`; the camera stream is consumed later by
+llm_detect/yolo_grasp, while this package only publishes the arm TF
+subtree.
 
 ## Capability surface
 
@@ -129,9 +130,8 @@ ros2 run tf2_ros tf2_echo base_link link6
 # Should report a transform that moves when you ros2 topic pub to
 # /arm/pos_cmd or wiggle the arm by hand.
 
-# Optional: if easy_handeye2_rbnx is up too, the chain
-# base_link → link6 → camera_color_optical_frame should resolve:
-ros2 run tf2_ros tf2_echo base_link camera_color_optical_frame
+# Camera hand-eye is checked through the 2D homography used by
+# yolo_grasp, not through an easy_handeye2 TF edge in this deploy.
 ```
 
 ## Vendor / upstream

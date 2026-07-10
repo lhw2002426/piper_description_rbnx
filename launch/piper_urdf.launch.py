@@ -30,9 +30,9 @@ Frame contract published by this launch:
                   TFs stay at zero. grasp pipeline only uses link6,
                   so this is fine.
 
-Hand-eye edge (link6 → camera_color_optical_frame) is NOT here —
-that lives in easy_handeye2_rbnx (sibling package). Both packages
-cohabit /tf_static cleanly; their edges are disjoint subtrees.
+Camera hand-eye is NOT published here. The current vertical-grasp
+deploy does not run easy_handeye2; yolo_grasp uses a calibrated 2D
+homography file to map image pixels directly into arm/base_link XY.
 
 Launch arguments:
     urdf_path           absolute path to piper_description.urdf.
